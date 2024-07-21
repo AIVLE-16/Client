@@ -44,7 +44,7 @@ const BtnBorder = styled.button`
   height: 60px;
   border: none;
   border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgb(255, 255, 255, 0.5);
   cursor: pointer;
   margin-bottom: 30px;
 `;
@@ -169,17 +169,10 @@ const Report = () => {
 
     recognitionRef.current.onerror = (event) => {
       console.error('Speech Recognition Error', event.error);
-      if (event.error === 'network') {
-        recognitionRef.current.stop();
-        recognitionRef.current.start();
-      }
     };
   }, []);
 
   const startRecording = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
         mediaRecorderRef.current = new MediaRecorder(stream);
@@ -233,12 +226,9 @@ const Report = () => {
     startSilenceTimer();
   };
 
-  const playTts = (text, callback) => {
+  const playTts = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ko-KR';
-    utterance.onend = () => {
-      if (callback) callback();
-    };
     window.speechSynthesis.speak(utterance);
   };
 
@@ -353,7 +343,7 @@ const Report = () => {
               </BtnBorder>
             }
           </div>
-          <STTText>{result || "음성 인식 중..."}</STTText>
+          <STTText>{result}</STTText>
           {ttsText && (
             <STTText style={{ marginTop: '20px' }}>TTS: {ttsText}</STTText>
           )}
