@@ -59,7 +59,7 @@ export const sendCode = (email) => {
     }
   })
   .then(() => {
-    successWithoutBtn('인증번호가 발송되었습니다.', '', () => {});
+    successWithoutBtn('인증번호가 발송되었습니다.', '5분 안에 인증번호를 입력해주세요.', () => {});
     return true;
   })
   .catch((error) => {

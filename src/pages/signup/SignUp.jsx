@@ -58,7 +58,7 @@ function Signup() {
   const onClickAuthBtn = async () => {
     const res = await checkCode(email, code);
     if (res) {
-      successWithoutBtn('인증이 완료되었습니다.', '', () => {});
+      successWithoutBtn('인증이 완료되었습니다.', '가입하기 버튼을 눌러 가입을 완료해주세요.', () => {});
       setConfirmed(true);
     }
   }

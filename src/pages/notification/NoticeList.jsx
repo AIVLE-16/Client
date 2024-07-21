@@ -58,10 +58,12 @@ const NoticeList = () => {
           </div>
           {isAdmin && <button className='write' onClick={() => navigate('/notice/write')}>글쓰기</button>}
         </div>
-        {showNotice ? (
+        {showNotice.length > 0 ? (
           <NoticeTable notice={showNotice} />
         ) : (
-          <p>작성된 공지사항이 없습니다.</p>
+          <div style={{textAlign: 'center', margin: '40px 0'}}>
+            <p>작성된 공지사항이 없습니다.</p>
+          </div>
         )}
       </div>
     </>

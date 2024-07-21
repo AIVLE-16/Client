@@ -32,6 +32,11 @@
   color: black;
 }
 
+.report-list tr:hover {
+  cursor: pointer;
+  background-color: #E1E4E6;
+}
+
 .searchBar {
     display: flex;
     justify-content: space-between;

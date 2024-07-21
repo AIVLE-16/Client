@@ -1,58 +1,81 @@
+import { getStats } from '../../../apis/report';
 import React, { useEffect, useState } from 'react';
-import { Doughnut } from 'react-chartjs-2';
-import axios from 'axios';
-import 'chart.js/auto';
+
 import './Chart.css';
+import 'chart.js/auto';
+import { Doughnut } from 'react-chartjs-2';
 
 const Chart = () => {
+  const [labels, setLabels] = useState([]);
+  const [values, setValues] = useState([]);
   const [chartData, setChartData] = useState(null);
 
-  const fetchChartData = async () => {
-    try {
-      const response = await axios.get('http://localhost:3000/api/disaster-data');
-      const data = response.data;
+  const setData = () => {
+    const chartData = {
+      labels: labels,
+      data: values,
+      datasets: [
+        {
+          label: 'Disaster Large',
+          data: values,
+          backgroundColor: [
+            'rgba(153, 205, 255, 0.5)',
+            'rgba(255, 235, 154, 0.5)',
+            'rgba(255, 203, 153, 0.5)',
+            'rgba(252, 154, 153, 0.5)',
+            'rgba(153, 205, 255, 0.5)',
+            'rgba(255, 235, 154, 0.5)',
+            'rgba(255, 203, 153, 0.5)',
+            'rgba(252, 154, 153, 0.5)',
+            'rgba(153, 205, 255, 0.5)',
+            'rgba(255, 235, 154, 0.5)',
+            'rgba(255, 203, 153, 0.5)',
+            'rgba(252, 154, 153, 0.5)',
+            'rgba(153, 205, 255, 0.5)',
+            'rgba(255, 235, 154, 0.5)',
+            'rgba(255, 203, 153, 0.5)',
+            'rgba(252, 154, 153, 0.5)',
+          ],
+          borderColor: [
+            'rgba(153, 205, 255, 1)',
+            'rgba(255, 235, 154, 1)',
+            'rgba(255, 203, 153, 1)',
+            'rgba(252, 154, 153, 1)',
+            'rgba(153, 205, 255, 1)',
+            'rgba(255, 235, 154, 1)',
+            'rgba(255, 203, 153, 1)',
+            'rgba(252, 154, 153, 1)',
+            'rgba(153, 205, 255, 1)',
+            'rgba(255, 235, 154, 1)',
+            'rgba(255, 203, 153, 1)',
+            'rgba(252, 154, 153, 1)',
+            'rgba(153, 205, 255, 1)',
+            'rgba(255, 235, 154, 1)',
+            'rgba(255, 203, 153, 1)',
+            'rgba(252, 154, 153, 1)',
+          ],
+          borderWidth: 1.5,
+        },
+      ],
+    };
 
-      const disasterCounts = data.reduce((acc, curr) => {
-        acc[curr] = (acc[curr] || 0) + 1;
-        return acc;
-      }, {});
+    setChartData(chartData);
+  }
 
-      const labels = Object.keys(disasterCounts);
-      const values = Object.values(disasterCounts);
-
-      const chartData = {
-        labels: labels,
-        datasets: [
-          {
-            label: 'Disaster Large',
-            data: values,
-            backgroundColor: [
-              'rgba(153, 205, 255, 0.5)',
-              'rgba(255, 235, 154, 0.5)',
-              'rgba(255, 203, 153, 0.5)',
-              'rgba(252, 154, 153, 0.5)',
-            ],
-            borderColor: [
-              'rgba(153, 205, 255, 1)',
-              'rgba(255, 235, 154, 1)',
-              'rgba(255, 203, 153, 1)',
-              'rgba(252, 154, 153, 1)',
-            ],
-            borderWidth: 1.5,
-          },
-        ],
-      };
-
-      setChartData(chartData);
-    } catch (error) {
-      console.error('Error fetching chart data:', error);
-    }
-  };
+  const getData = () => {
+    getStats().then((res) => {
+      setLabels(res.map(item => item.category));
+      setValues(res.map(item => item.count));
+    })
+  }
 
   useEffect(() => {
-    // 처음 로딩 시 데이터를 한 번 가져옵니다.
-    fetchChartData();
+    getData();
   }, []);
+
+  useEffect(() => {
+    setData();
+  }, [values])
 
   const options = {
     responsive: true,
@@ -102,7 +125,7 @@ const Chart = () => {
           src="/images/refresh.png"
           alt="새로고침"
           className='refreshBtn'
-          onClick={fetchChartData}
+          onClick={getData}
         />
       </div>
       {chartData ? <Doughnut data={chartData} options={options} /> : null}

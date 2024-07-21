@@ -3,10 +3,9 @@ import { getUser } from '../../apis/user';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 
-
 import Chart from './chart/Chart';
 import UserComponent from "./UserComponent";
-import NoticeComponent from './NoticeComponent';
+import NoticeComponent from './notice/NoticeComponent';
 import CustomCalendar from './customCalendar/CustomCalendar';
 
 const BodyContainer = styled.div`
@@ -24,7 +23,6 @@ const CalendarWrapper = styled.div`
   background-color: #D5D9DB55;
   border-radius: 15px;
   padding: 20px;
-  box-sizing: border-box;
 `;
 
 const UserInfoContainer = styled.div`
@@ -35,7 +33,6 @@ const UserInfoContainer = styled.div`
   background-color: #D5D9DB55;
   border-radius: 15px;
   padding: 20px;
-  box-sizing: border-box;
 `;
 
 const StatsContainer = styled.div`
@@ -47,13 +44,10 @@ const StatsContainer = styled.div`
   background-color: #D5D9DB55;
   border-radius: 15px;
   padding: 20px;
-  box-sizing: border-box;
 `;
-
 
 const Body = () => {
   const navigate = useNavigate();
-
   const [name, setName] = useState('')
 
   useEffect(() => {
