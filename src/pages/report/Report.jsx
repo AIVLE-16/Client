@@ -3,9 +3,9 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import './Report.css';
 import io from 'socket.io-client';
-import Overlay from '../components/call/Overlay';
-import CallModal from '../components/call/CallModal';
-import { GoBackBtn } from '../components/CommonStyles';
+import Overlay from '../../components/call/Overlay';
+import CallModal from '../../components/call/CallModal';
+import { GoBackBtn } from '../../components/CommonStyles';
 
 const socket = io('http://localhost:5000', {
   transports: ['websocket']

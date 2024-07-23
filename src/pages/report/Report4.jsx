@@ -1,126 +1,30 @@
-import io from 'socket.io-client';
 import { ReactMic } from 'react-mic';
 import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
-import { GoBackBtn } from '../components/CommonStyles';
+
+import './Report.css';
+import io from 'socket.io-client';
+import Overlay from '../../components/call/Overlay';
+import CallModal from '../../components/call/CallModal';
+import { GoBackBtn } from '../../components/CommonStyles';
 
 const socket = io('http://localhost:5000', {
   transports: ['websocket']
 });
 
-const WhiteContainer = styled.div`
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  background-size: cover;
-  background-position: center;
-`;
-
-const BoldText = styled.p`
-  font-size: 20px;
-  font-weight: bold;
-  color: #CF1010;
-  margin-bottom: 15px;
-`;
-
-const RecordBox = styled.div`
-  width: 550px;
-  height: 270px;
-  display: flex;
-  text-align: center;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  margin-bottom: 25px;
-  border-radius: 20px;
-  color: #db0948;
-  background-color: #f5f5f5c0;
-`;
-
-const BtnBorder = styled.button`
-  width: 60px;
-  height: 60px;
-  border: none;
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.5);
-  cursor: pointer;
-  margin-bottom: 30px;
-`;
-
-const Circle = styled.div`
-  width: 20px;
-  height: 20px;
-  margin: 0 auto;
-  border-radius: 50%;
-  background-color: red;
-`;
-
-const Square = styled.div`
-  width: 20px;
-  height: 20px;
-  margin: 0 auto;
-  background-color: red;
-`;
-
-const MacWindow = styled.div`
-  width: 60%;
-  height: 500px;
-  max-width: 1200px;
-  margin: 50px auto;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-`;
-
-const MacHeader = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 10px 15px;
-  background-color: #f5f5f5;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  border-bottom: 1px solid #ccc;
-`;
-
-const Dot = styled.div`
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 8px;
-  background-color: ${props => props.color};
-`;
-
-const MacBody = styled.div`
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-`;
-
-const STTText = styled.p`
-  color: black;
-  font-size: 18px;
-  position: absolute;
-  top: 95%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  min-width: 500px;
-  max-width: 80%;
-  word-wrap: break-word;
-`;
-
-const Report = () => {
+const Report4 = () => {
   const [result, setResult] = useState('');
   const [ttsText, setTtsText] = useState('');
   const [recording, setRecording] = useState(false);
+  const [chat, setChat] = useState([{ text: '신고 시작', isUser: false }]);
+
+  const [done, setDone] = useState(true);
+  const [address, setAddress] = useState('서울 강서구 화곡동 980-16');
+  const [place, setPlace] = useState('강서구청')
+  const [time, setTime] = useState(new Date('2024-07-19 07:48:39.428767'))
+  const [content, setContent] = useState('불이 크게 일고 있고 사람들이 숨을 쉬지 못하는 상황입니다.');
+  const [lat, setLat] = useState(37.45978574975834);
+  const [lng, setLng] = useState(126.9511239870991);
+
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
   const recognitionRef = useRef(null);
@@ -128,10 +32,10 @@ const Report = () => {
 
   useEffect(() => {
     socket.on('audio_text', (data) => {
-      console.log('Received audio_text event with data:', data);
-      setResult(data);
-      console.log('Result set to:', data);
-      playTts(data);
+      console.log('Received audio_text:', data.audio_text);
+      setResult(data.audio_text);
+      setChat(prevChat => [...prevChat, { text: data.audio_text, isUser: true }]);
+      playTts(data.audio_text);
     });
 
     return () => {
@@ -169,17 +73,10 @@ const Report = () => {
 
     recognitionRef.current.onerror = (event) => {
       console.error('Speech Recognition Error', event.error);
-      if (event.error === 'network') {
-        recognitionRef.current.stop();
-        recognitionRef.current.start();
-      }
     };
   }, []);
 
   const startRecording = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-    }
     navigator.mediaDevices.getUserMedia({ audio: true })
       .then(stream => {
         mediaRecorderRef.current = new MediaRecorder(stream);
@@ -233,12 +130,9 @@ const Report = () => {
     startSilenceTimer();
   };
 
-  const playTts = (text, callback) => {
+  const playTts = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'ko-KR';
-    utterance.onend = () => {
-      if (callback) callback();
-    };
     window.speechSynthesis.speak(utterance);
   };
 
@@ -323,44 +217,42 @@ const Report = () => {
   };
 
   return (
-    <WhiteContainer>
+    <div className="report-container">
+      {done && <>
+        <Overlay />
+        <CallModal address={address} place={place} time={time} content={content} lat={lat} lng={lng} />
+      </>}
       <GoBackBtn />
-      <MacWindow>
-        <MacHeader>
-          <Dot color="#FF605C" />
-          <Dot color="#FFBD44" />
-          <Dot color="#00CA4E" />
-        </MacHeader>
-        <MacBody>
-          <RecordBox>
-            <BoldText>정확한 접수를 위해 녹음버튼을 눌러주세요</BoldText>
-            <div style={{ width: "500px", overflow: "hidden", margin: "0 auto" }}>
-              <ReactMic
-                record={recording}
-                className="sound-wave"
-                mimeType="audio/wav"
-                strokeColor="#444445"
-                backgroundColor="#f5f5f5c0" />
-            </div>
-          </RecordBox>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            {!recording ?
-              <BtnBorder onClick={startRecording} disabled={recording}>
-                <Circle />
-              </BtnBorder> :
-              <BtnBorder onClick={stopRecording} disabled={!recording}>
-                <Square />
-              </BtnBorder>
-            }
+      <div className="recording-container">
+        <div className="bold-text">정확한 접수를 위해 녹음버튼을 눌러주세요</div>
+        <div className="react-mic-container">
+          <ReactMic
+            record={recording}
+            className="sound-wave"
+            mimeType="audio/wav"
+            strokeColor="#444445"
+            backgroundColor="#ffffff" />
+        </div>
+        <div className="button-container">
+          {!recording ? 
+            <button className="btn-border" onClick={startRecording} disabled={recording}>
+              <div className="circle" />
+            </button> :
+            <button className="btn-border" onClick={stopRecording} disabled={!recording}>
+              <div className="square" />
+            </button>
+          }
+        </div>
+      </div>
+      <div className="chat-container">
+        {chat.map((msg, index) => (
+          <div key={index} className={`chat-bubble ${msg.isUser ? 'user' : 'system'}`}>
+            {msg.text}
           </div>
-          <STTText>{result || "음성 인식 중..."}</STTText>
-          {ttsText && (
-            <STTText style={{ marginTop: '20px' }}>TTS: {ttsText}</STTText>
-          )}
-        </MacBody>
-      </MacWindow>
-    </WhiteContainer>
+        ))}
+      </div>
+    </div>
   );
 }
 
-export default Report;
+export default Report4;
