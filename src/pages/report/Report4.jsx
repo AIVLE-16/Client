@@ -54,9 +54,9 @@ const Report4 = () => {
         setDone(true);
         setStart(false);
         msg = data.message;
-      } else if (data.message.includes('GPT')) errorWithoutBtn('알 수 없는 오류가 발생했습니다.');
+      }
       else {
-        msg = data.message.split(':')[1] + '에 대한 정보가 부족합니다. 다시 한번 말씀해주세요.';
+        msg = data.message;
         setChat(prevChat => [...prevChat, { text: msg, isUser: false }]);
       }
       playTts(msg);
