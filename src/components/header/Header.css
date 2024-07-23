@@ -7,11 +7,11 @@
 }
 
 .menu:hover {
-  color: white;
-  background-color: #b6b6b6;
+  background-color: #ffffffc0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .active {
-  color: white;
-  background-color: #b6b6b6;
+  background-color: #ffffffc0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }

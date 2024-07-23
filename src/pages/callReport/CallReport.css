@@ -1,5 +1,18 @@
+@font-face {
+  font-family: 'GothicA1-Thin';
+  src: url('../../fonts/GothicA1-Thin.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'GothicA1-Bold';
+  src: url('../../fonts/GothicA1-Bold.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .report-list-container {
-  background-color: #f5f5f5c0;
+  background-color: #ffffffc0;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 20px 0 0 0;
   border-radius: 20px;
@@ -19,22 +32,24 @@
 }
 
 .report-list tbody {
-  background-color: white;
+  background-color: #fdfbfbea;
+  box-shadow: rgba(51, 51, 51, 0.35) 0px 5px 15px;
 }
 
 .report-list th, .report-list td {
-  border: 1px solid #E1E4E6;
+  border: 1px solid white;
   padding: 8px;
+  font-weight: bold;
+  font-family: 'GothicA1-Thin';
 }
 
 .report-list th {
-  background-color: #E1E4E6;
-  color: black;
+  background-image: linear-gradient(180deg, #fdfbfb 0%, #ebedeed0 100%);
 }
 
 .report-list tr:hover {
   cursor: pointer;
-  background-color: #E1E4E6;
+  background-color: #dfe9f35d;
 }
 
 .searchBar {
@@ -49,8 +64,8 @@
   margin: 0px 10px;
   border-radius: 20px;
   border: none;
-  background-color: #DCDFE1;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  background-color: white;
+  box-shadow: rgba(51, 51, 51, 0.35) 0px 5px 15px;
 }
 
 .searchBar input:hover {
@@ -63,18 +78,19 @@
   font-weight: 900;
   border: none;
   border-radius: 20px;
-  background-color: #DCDFE1;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  background-image: linear-gradient(180deg, #fdfbfb 0%, #ebedeed0 100%);
+  box-shadow: rgba(51, 51, 51, 0.35) 0px 5px 15px;
   cursor: pointer;
   margin-right: 10px;
+  font-family: 'GothicA1-Bold';
 }
 
 .searchBar button:hover {
-  background-color: #c3c4c4;
+  background-color: #7ea0ceda;
 }
 
 .table-container {
-  background-color: #f5f5f5c0;
+  background-color: #ffffffc0;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   padding: 30px;
   border-radius: 20px;

@@ -1,41 +1,65 @@
-import { ReactMic } from 'react-mic';
 import React, { useState, useEffect, useRef } from 'react';
+
+import { ReactMic } from 'react-mic';
+import { convertToWav } from '../../utils/report';
+import { errorWithoutBtn } from '../../utils/swal';
 
 import './Report.css';
 import io from 'socket.io-client';
 import Overlay from '../../components/call/Overlay';
 import CallModal from '../../components/call/CallModal';
 import { GoBackBtn } from '../../components/CommonStyles';
+import { getReportById } from '../../apis/report';
+import { toKoreaTime } from '../../utils/utils';
 
 const socket = io('http://localhost:5000', {
   transports: ['websocket']
 });
 
 const Report4 = () => {
-  const [result, setResult] = useState('');
-  const [ttsText, setTtsText] = useState('');
+  const [start, setStart] = useState(false);
   const [recording, setRecording] = useState(false);
-  const [chat, setChat] = useState([{ text: '신고 시작', isUser: false }]);
+  const [chat, setChat] = useState([{ text: '녹음 버튼을 누르고 신고를 시작해주세요.', isUser: false }]);
+  const [interimTranscript, setInterimTranscript] = useState('');
 
-  const [done, setDone] = useState(true);
-  const [address, setAddress] = useState('서울 강서구 화곡동 980-16');
-  const [place, setPlace] = useState('강서구청')
-  const [time, setTime] = useState(new Date('2024-07-19 07:48:39.428767'))
-  const [content, setContent] = useState('불이 크게 일고 있고 사람들이 숨을 쉬지 못하는 상황입니다.');
-  const [lat, setLat] = useState(37.45978574975834);
-  const [lng, setLng] = useState(126.9511239870991);
+  const [done, setDone] = useState(false);
+  const [address, setAddress] = useState('');
+  const [place, setPlace] = useState('')
+  const [time, setTime] = useState('')
+  const [content, setContent] = useState('');
+  const [lat, setLat] = useState(0);
+  const [lng, setLng] = useState(0);
 
-  const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
+  const mediaRecorderRef = useRef(null);
   const recognitionRef = useRef(null);
   const silenceTimerRef = useRef(null);
 
+  // 백 -> 프론트 소켓
   useEffect(() => {
     socket.on('audio_text', (data) => {
-      console.log('Received audio_text:', data.audio_text);
-      setResult(data.audio_text);
-      setChat(prevChat => [...prevChat, { text: data.audio_text, isUser: true }]);
-      playTts(data.audio_text);
+      console.log('Received audio_text:', data);
+
+      let msg = '';
+      if (data.log_id) {
+        getReportById(data.log_id).then((res) => {
+          console.log(res);
+          setAddress(res.fields.address_name);
+          setPlace(res.fields.place_name);
+          setTime(toKoreaTime(res.fields.date));
+          setContent(res.fields.details);
+          setLat(res.fields.lat);
+          setLng(res.fields.lng);
+        })
+        setDone(true);
+        setStart(false);
+        msg = data.message;
+      } else if (data.message.includes('GPT')) errorWithoutBtn('알 수 없는 오류가 발생했습니다.');
+      else {
+        msg = data.message.split(':')[1] + '에 대한 정보가 부족합니다. 다시 한번 말씀해주세요.';
+        setChat(prevChat => [...prevChat, { text: msg, isUser: false }]);
+      }
+      playTts(msg);
     });
 
     return () => {
@@ -43,6 +67,81 @@ const Report4 = () => {
     };
   }, []);
 
+  // 녹음 시작
+  const startRecording = () => {
+    setStart(true);
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        chunksRef.current = [];
+
+        mediaRecorderRef.current.ondataavailable = e => {
+          chunksRef.current.push(e.data);
+        };
+
+        mediaRecorderRef.current.onstop = async () => {
+          await processChunks();
+        };
+
+        mediaRecorderRef.current.start();
+        recognitionRef.current.start();
+        setRecording(true);
+        startSilenceTimer();
+      })
+      .catch(err => {
+        console.error('Error accessing microphone:', err);
+      });
+  };
+
+  // 녹음 중지
+  const pauseRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      recognitionRef.current.stop();
+      setRecording(false);
+      clearTimeout(silenceTimerRef.current);
+    }
+  }
+
+  // 녹음 끝
+  const stopRecording = () => {
+    setStart(false);
+    pauseRecording();
+  };
+
+  const processChunks = async () => {
+    const blob = new Blob(chunksRef.current, { 'type': 'audio/webm' });
+    const arrayBuffer = await blob.arrayBuffer();
+    const audioData = new Uint8Array(arrayBuffer);
+    const wavBuffer = await convertToWav(audioData);
+    socket.emit('audio_data', wavBuffer);
+    chunksRef.current = [];
+  };
+
+  const startSilenceTimer = () => {
+    silenceTimerRef.current = setTimeout(async () => {
+      pauseRecording();
+    }, 3000);
+  };
+
+  const resetSilenceTimer = () => {
+    clearTimeout(silenceTimerRef.current);
+    startSilenceTimer();
+  };
+
+  // tts
+  const playTts = (text) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ko-KR';
+    window.speechSynthesis.speak(utterance);
+
+    utterance.onend = () => {
+      startRecording();
+    };
+  };
+
+  // stt
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -67,7 +166,15 @@ const Report4 = () => {
         }
       }
 
-      setResult(finalTranscript || interimTranscript);
+      setInterimTranscript(interimTranscript); // 실시간으로 인식된 텍스트 업데이트
+      // setResult(finalTranscript || interimTranscript);
+
+      if (finalTranscript) {
+        setChat(prevChat => [...prevChat, { text: finalTranscript, isUser: true }]);
+        setInterimTranscript(''); // 최종 텍스트가 인식되면 interim 텍스트 초기화
+        // socket.emit('audio_text', { audio_text: finalTranscript });
+      }
+
       resetSilenceTimer();
     };
 
@@ -76,145 +183,9 @@ const Report4 = () => {
     };
   }, []);
 
-  const startRecording = () => {
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then(stream => {
-        mediaRecorderRef.current = new MediaRecorder(stream);
-        chunksRef.current = [];
-
-        mediaRecorderRef.current.ondataavailable = e => {
-          chunksRef.current.push(e.data);
-        };
-
-        mediaRecorderRef.current.onstop = async () => {
-          await processChunks();
-        };
-
-        mediaRecorderRef.current.start();
-        setRecording(true);
-        recognitionRef.current.start();
-        startSilenceTimer();
-      })
-      .catch(err => {
-        console.error('Error accessing microphone:', err);
-      });
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      recognitionRef.current.stop();
-      setRecording(false);
-      clearTimeout(silenceTimerRef.current);
-    }
-  };
-
-  const processChunks = async () => {
-    const blob = new Blob(chunksRef.current, { 'type': 'audio/webm' });
-    const arrayBuffer = await blob.arrayBuffer();
-    const audioData = new Uint8Array(arrayBuffer);
-    const wavBuffer = await convertToWav(audioData);
-    socket.emit('audio_data', wavBuffer);
-    chunksRef.current = [];
-  };
-
-  const startSilenceTimer = () => {
-    silenceTimerRef.current = setTimeout(async () => {
-      stopRecording();
-      playTts(ttsText);
-    }, 3000);
-  };
-
-  const resetSilenceTimer = () => {
-    clearTimeout(silenceTimerRef.current);
-    startSilenceTimer();
-  };
-
-  const playTts = (text) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ko-KR';
-    window.speechSynthesis.speak(utterance);
-  };
-
-  const convertToWav = async (audioData) => {
-    const audioContext = new AudioContext();
-    const audioBuffer = await audioContext.decodeAudioData(audioData.buffer);
-
-    const targetSampleRate = 16000;
-    const numChannels = audioBuffer.numberOfChannels;
-    const length = audioBuffer.length * targetSampleRate / audioBuffer.sampleRate;
-    const offlineContext = new OfflineAudioContext(numChannels, length, targetSampleRate);
-
-    const bufferSource = offlineContext.createBufferSource();
-    bufferSource.buffer = audioBuffer;
-
-    bufferSource.connect(offlineContext.destination);
-    bufferSource.start(0);
-
-    const resampledBuffer = await offlineContext.startRendering();
-    return encodeWAV(resampledBuffer);
-  };
-
-  const encodeWAV = (audioBuffer) => {
-    const numChannels = audioBuffer.numberOfChannels;
-    const sampleRate = audioBuffer.sampleRate;
-    const format = 1; // PCM
-    const bitDepth = 16;
-    const bytesPerSample = bitDepth / 8;
-
-    let buffers = [];
-    for (let i = 0; i < numChannels; i++) {
-      buffers.push(audioBuffer.getChannelData(i));
-    }
-
-    const interleaved = interleave(buffers);
-    const buffer = new ArrayBuffer(44 + interleaved.length * bytesPerSample);
-    const view = new DataView(buffer);
-
-    writeString(view, 0, 'RIFF');
-    view.setUint32(4, 36 + interleaved.length * bytesPerSample, true);
-    writeString(view, 8, 'WAVE');
-    writeString(view, 12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, format, true);
-    view.setUint16(22, numChannels, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * numChannels * bytesPerSample, true);
-    view.setUint16(32, numChannels * bytesPerSample, true);
-    view.setUint16(34, bitDepth, true);
-    writeString(view, 36, 'data');
-    view.setUint32(40, interleaved.length * bytesPerSample, true);
-
-    floatTo16BitPCM(view, 44, interleaved);
-
-    return buffer;
-  };
-
-  const writeString = (view, offset, string) => {
-    for (let i = 0; i < string.length; i++) {
-      view.setUint8(offset + i, string.charCodeAt(i));
-    }
-  };
-
-  const interleave = (buffers) => {
-    const length = buffers[0].length;
-    const result = new Float32Array(length * buffers.length);
-
-    let inputIndex = 0;
-    for (let i = 0; i < length; i++) {
-      for (let j = 0; j < buffers.length; j++) {
-        result[inputIndex++] = buffers[j][i];
-      }
-    }
-    return result;
-  };
-
-  const floatTo16BitPCM = (output, offset, input) => {
-    for (let i = 0; i < input.length; i++, offset += 2) {
-      const s = Math.max(-1, Math.min(1, input[i]));
-      output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-    }
-  };
+  useEffect(() => {
+    console.log(recording ? '녹음중' : '녹음중지');
+  }, [recording])
 
   return (
     <div className="report-container">
@@ -234,7 +205,7 @@ const Report4 = () => {
             backgroundColor="#ffffff" />
         </div>
         <div className="button-container">
-          {!recording ? 
+          {!start ? 
             <button className="btn-border" onClick={startRecording} disabled={recording}>
               <div className="circle" />
             </button> :
@@ -250,6 +221,11 @@ const Report4 = () => {
             {msg.text}
           </div>
         ))}
+        {interimTranscript && (
+          <div className="chat-bubble user">
+            {interimTranscript}
+          </div>
+        )}
       </div>
     </div>
   );

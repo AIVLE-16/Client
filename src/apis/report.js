@@ -25,6 +25,17 @@ export const getReportById = (id) => {
   .catch((error) => console.log(error))
 }
 
+// 일별 신고 현황 가져오기
+export const getDayLog = () => {
+  return axios.get(SERVER_URL + 'daylog/', {
+    headers: {
+      Authorization: access
+    }
+  })
+  .then((res) => {return res.data})
+  .catch((error) => console.log(error))
+}
+
 // 출동통계 가져오기
 export const getStats = () => {
   return axios.get(SERVER_URL + 'categorycount/', {

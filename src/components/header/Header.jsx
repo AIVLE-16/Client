@@ -30,7 +30,6 @@ const Header = () => {
   const location = useLocation();
 
   useEffect(() => {
-    console.log(location.pathname)
     setLoc(location.pathname);
   }, [])
 

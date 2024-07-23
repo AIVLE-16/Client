@@ -1,6 +1,5 @@
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 // functions
 import { blockSpace } from '../../utils/keyboard';
@@ -79,11 +78,6 @@ function Signup() {
     const res = await signup(id, name, email, password);
     if (res) successWithoutBtn('회원가입에 성공하였습니다.', '로그인 페이지로 이동합니다.', () => navigate('/login'));
   };
-
-  useEffect(() => {
-    // csrf token 가져오기
-    axios.get('http://localhost:8000/account/signup/')
-  }, [])
 
   return (
     <FullContainer>

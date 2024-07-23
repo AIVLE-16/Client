@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import axios from 'axios';
+import React, { useState, useEffect } from "react";
 
 import './Home.css';
 import styled from "styled-components";
@@ -49,16 +50,19 @@ const PopupWrapper = styled.div`
   z-index: 2;
   display: flex;
   justify-content: center;
-  background-color: rgb(0, 0, 0, 0.5);
+  align-items: center;
+  pointer-events: none; /* This allows clicks to pass through the wrapper */
 `;
 
 const PopupContent = styled.div`
+  width: 600px; /* Fixed width */
+  height: 650px; /* Fixed height */
   cursor: grab;
   padding: 20px;
-  margin-top: 70px;
   background: white;
   border-radius: 10px;
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  pointer-events: all; /* This allows clicks to interact with the popup content */
 
   &.dragging {
     cursor: grabbing;
@@ -67,7 +71,16 @@ const PopupContent = styled.div`
 
 const ImageContainer = styled.div`
   width: 100%;
-  height: auto;
+  height: calc(100% - 40px); /* Adjust height to leave space for the checkbox and close button */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+`;
+
+const StyledImage = styled.img`
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 `;
 
 const CloseButton = styled.button`
@@ -109,8 +122,6 @@ const Home = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [showPopupToday, setShowPopupToday] = useState(true);
   const [isDragging, setIsDragging] = useState(false);
-  const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
-  const imgRef = useRef(null);
 
   useEffect(() => {
     const lastVisit = localStorage.getItem('lastVisit');
@@ -137,14 +148,10 @@ const Home = () => {
     setIsDragging(false);
   };
 
-  const handleImageLoad = () => {
-    if (imgRef.current) {
-      setImgSize({
-        width: imgRef.current.naturalWidth,
-        height: imgRef.current.naturalHeight
-      });
-    }
-  };
+  useEffect(() => {
+    // csrf token 가져오기
+    axios.get(process.env.REACT_APP_USER_SERVER_URL + 'signup/')
+  }, [])
 
   return (
     <div className="home-container">
@@ -162,24 +169,18 @@ const Home = () => {
       </Navbar>
       <CentralTextContainer>
         <Subheading>긴급 신고 자동화 시스템</Subheading>
-        <Description>AI 기술을 이용한 신고 자동화로 <br></br>신속하고 효율적인 신고 접수를 지원합니다</Description>
+        <Description>AI 기술을 이용한 신고 자동화로 <br />신속하고 효율적인 신고 접수를 지원합니다</Description>
       </CentralTextContainer>
 
       {isPopupOpen && (
         <PopupWrapper>
           <Draggable onStart={handleStart} onStop={handleStop} bounds="parent">
-            <PopupContent
-              className={isDragging ? 'dragging' : ''}
-              style={{ width: imgSize.width, height: imgSize.height + 80 }}
-            >
+            <PopupContent className={isDragging ? 'dragging' : ''}>
               <ImageContainer>
-                <a href="https://www.police.go.kr/index.do" target="_blank" rel="noopener noreferrer">
-                  <img
-                    src="/images/popup.jpg"
+                <a href="https://www.nfa.go.kr/nfa/publicrelations/emergencyservice/119emergencydeclaration/" target="_blank" rel="noopener noreferrer">
+                  <StyledImage
+                    src="/images/emergency_report.jpg"
                     alt="Popup"
-                    ref={imgRef}
-                    onLoad={handleImageLoad}
-                    style={{ width: '100%', height: '100%' }}
                   />
                 </a>
               </ImageContainer>
