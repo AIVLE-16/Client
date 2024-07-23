@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 
 import { ReactMic } from 'react-mic';
 import { convertToWav } from '../../utils/report';
-import { errorWithoutBtn } from '../../utils/swal';
 
 import './Report.css';
 import io from 'socket.io-client';
@@ -10,7 +9,6 @@ import Overlay from '../../components/call/Overlay';
 import CallModal from '../../components/call/CallModal';
 import { GoBackBtn } from '../../components/CommonStyles';
 import { getReportById } from '../../apis/report';
-import { toKoreaTime } from '../../utils/utils';
 
 const socket = io('http://localhost:5000', {
   transports: ['websocket']
@@ -21,6 +19,7 @@ const Report4 = () => {
   const [recording, setRecording] = useState(false);
   const [chat, setChat] = useState([{ text: '녹음 버튼을 누르고 신고를 시작해주세요.', isUser: false }]);
   const [interimTranscript, setInterimTranscript] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [done, setDone] = useState(false);
   const [address, setAddress] = useState('');
@@ -39,6 +38,7 @@ const Report4 = () => {
   useEffect(() => {
     socket.on('audio_text', (data) => {
       console.log('Received audio_text:', data);
+      setIsProcessing(false); // 처리 중 상태 해제
 
       let msg = '';
       if (data.log_id) {
@@ -46,7 +46,7 @@ const Report4 = () => {
           console.log(res);
           setAddress(res.fields.address_name);
           setPlace(res.fields.place_name);
-          setTime(toKoreaTime(res.fields.date));
+          setTime(res.fields.date);
           setContent(res.fields.details);
           setLat(res.fields.lat);
           setLng(res.fields.lng);
@@ -81,6 +81,7 @@ const Report4 = () => {
         };
 
         mediaRecorderRef.current.onstop = async () => {
+          setIsProcessing(true); // 처리 중 상태 설정
           await processChunks();
         };
 
@@ -167,12 +168,10 @@ const Report4 = () => {
       }
 
       setInterimTranscript(interimTranscript); // 실시간으로 인식된 텍스트 업데이트
-      // setResult(finalTranscript || interimTranscript);
 
       if (finalTranscript) {
         setChat(prevChat => [...prevChat, { text: finalTranscript, isUser: true }]);
         setInterimTranscript(''); // 최종 텍스트가 인식되면 interim 텍스트 초기화
-        // socket.emit('audio_text', { audio_text: finalTranscript });
       }
 
       resetSilenceTimer();
@@ -182,10 +181,6 @@ const Report4 = () => {
       console.error('Speech Recognition Error', event.error);
     };
   }, []);
-
-  useEffect(() => {
-    console.log(recording ? '녹음중' : '녹음중지');
-  }, [recording])
 
   return (
     <div className="report-container">
@@ -219,6 +214,9 @@ const Report4 = () => {
         {chat.map((msg, index) => (
           <div key={index} className={`chat-bubble ${msg.isUser ? 'user' : 'system'}`}>
             {msg.text}
+            {isProcessing && msg.isUser && index === chat.length - 1 && (
+              <div className="processing-text">처리 중입니다. 잠시만 기다려주세요.</div>
+            )}
           </div>
         ))}
         {interimTranscript && (

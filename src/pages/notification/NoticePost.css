@@ -1,3 +1,17 @@
+@font-face {
+  font-family: 'KimjungchulGothic';
+  src: url('../../fonts/KimjungchulGothic-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'GothicA1-Thin';
+  src: url('../../fonts/GothicA1-Thin.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .notice-post-container {
   width: 900px;
   margin: 0 auto;
@@ -5,7 +19,8 @@
   margin-top: 40px;
   margin-bottom: 40px;
   border-radius: 20px;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  background-color: #ffffffc0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .notice-post-container h2 {
@@ -13,18 +28,27 @@
   line-height: 50px;
   text-align: center;
   border-radius: 20px;
-  background-color: #D5D9DB62;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  background-image: linear-gradient(180deg, #fdfbfb 0%, #ebedeed0 100%);
+  box-shadow: rgba(51, 51, 51, 0.35) 0px 5px 15px;
+  font-family: 'KimjungchulGothic';
 }
 
 .notice-post-container .desc {
   gap: 10px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-end;  
+}
+
+.notice-post-container .desc p {
+  font-family: 'GothicA1-Thin';
+  font-weight: bold;
 }
 
 .notice-post-container button {
   border: none;
+  border-radius: 20px;
   cursor: pointer;
-  background-color: white;
+  background-image: linear-gradient(180deg, #fdfbfb 0%, #7ea0ceda 100%);
+  padding: 2px;
 }
+

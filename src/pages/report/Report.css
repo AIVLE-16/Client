@@ -5,7 +5,7 @@
   align-items: center;
   flex-direction: column;
 }
-  
+
 .recording-container {
   width: 60%;
   max-width: 800px;
@@ -18,7 +18,7 @@
   align-items: center;
   justify-content: center;
 }
-  
+
 .bold-text {
   font-size: 20px;
   font-weight: bold;
@@ -46,7 +46,7 @@
   background-color: rgb(255, 255, 255, 0.5);
   cursor: pointer;
 }
-  
+
 .circle {
   width: 20px;
   height: 20px;
@@ -76,7 +76,7 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   margin-top: 20px; /* 녹음 박스와의 간격 추가 */
 }
-  
+
 .chat-bubble {
   max-width: 80%;
   padding: 10px 20px;
@@ -129,4 +129,9 @@
   margin-top: -5px;
   margin-left: -10px;
 }
-  
+
+.processing-text {
+  font-size: 12px;
+  color: gray;
+  margin-top: 5px;
+}

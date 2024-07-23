@@ -8,6 +8,7 @@ import './NoticePost.css'
 import Header from "../../components/header/Header";
 import Content from "../../components/notification/Content";
 
+
 const NoticePost = () => {
   const {id} = useParams();
   const navigate = useNavigate();
@@ -31,11 +32,21 @@ const NoticePost = () => {
       <div className='desc' style={{marginBottom: '30px'}}>
         {isAdmin && <>
           <button onClick={() => navigate(`/notice/write/${id}`)}>수정</button>
-          <button onClick={() => deleteNotice(id)}>삭제</button>
+          <button onClick={() => deleteNotice(id)}>삭제</button>       
         </>}
       </div>
       <Content content={notice.content}/>
+      <div className="list-button-container">
+          <img 
+            src="/images/list.png" 
+            alt="목록" 
+            className="toList-button" 
+            onClick={() => navigate('/notice')}  
+          />
+          <p>목록으로</p>
+        </div>
     </div>
+    
   </>
 }
 
