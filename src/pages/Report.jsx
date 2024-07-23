@@ -1,128 +1,21 @@
-import io from 'socket.io-client';
 import { ReactMic } from 'react-mic'; 
 import React, { useState, useEffect, useRef } from 'react';
 
-import styled from 'styled-components';
+import './Report.css';
+import io from 'socket.io-client';
+import Overlay from '../components/call/Overlay';
+import CallModal from '../components/call/CallModal';
 import { GoBackBtn } from '../components/CommonStyles';
 
 const socket = io('http://localhost:5000', {
   transports: ['websocket']
 });
 
-const WhiteContainer = styled.div`
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: white;
-  background-size: cover;
-  background-position: center;
-`;
-
-const BoldText = styled.p`
-  font-size: 20px;
-  font-weight: bold;
-  color: #CF1010;
-  margin-bottom: 15px;
-`;
-
-const RecordBox = styled.div`
-  width: 550px;
-  height: 270px;
-  display: flex;
-  text-align: center;
-  align-items: center;
-  flex-direction: column;
-  justify-content: center;
-  margin-bottom: 25px;
-  border-radius: 20px;
-  color: #db0948;
-  background-color: #f5f5f5c0;
-`;
-
-const BtnBorder = styled.button`
-  width: 60px;
-  height: 60px;
-  border: none;
-  border-radius: 50%;
-  background-color: rgb(255, 255, 255, 0.5);
-  cursor: pointer;
-  margin-bottom: 30px;
-`;
-
-const Circle = styled.div`
-  width: 20px;
-  height: 20px;
-  margin: 0 auto;
-  border-radius: 50%;
-  background-color: red;
-`;
-
-const Square = styled.div`
-  width: 20px;
-  height: 20px;
-  margin: 0 auto;
-  background-color: red;
-`;
-
-const MacWindow = styled.div`
-  width: 60%;
-  height: 500px;
-  max-width: 1200px;
-  margin: 50px auto;
-  padding: 20px;
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-`;
-
-const MacHeader = styled.div`
-  display: flex;
-  align-items: center;
-  padding: 10px 15px;
-  background-color: #f5f5f5;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-  border-bottom: 1px solid #ccc;
-`;
-
-const Dot = styled.div`
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: 8px;
-  background-color: ${props => props.color};
-`;
-
-const MacBody = styled.div`
-  padding: 20px;
-  background-color: #f5f5f5;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-`;
-
-const STTText = styled.p`
-  color: black;
-  font-size: 18px; /* 글자 크기 */
-  position: absolute; /* 위치를 절대값으로 설정 */
-  top: 95%; /* 상단에서의 거리 */
-  left: 50%; /* 왼쪽에서의 거리 */
-  transform: translate(-50%, -50%); /* 중앙 정렬 */
-  text-align: center;
-  min-width: 500px;
-  max-width: 80%; /* 최대 너비를 설정하여 텍스트가 줄 바꿈되도록 함 */
-  word-wrap: break-word; /* 단어를 자동으로 줄 바꿈 */
-`;
-
 const Report = () => {
   const [result, setResult] = useState('');
-  const [ttsText, setTtsText] = useState('');
+  const [chat, setChat] = useState([{ text: '신고 시작', isUser: false }]);
   const [recording, setRecording] = useState(false);
-  const [ttsFinished, setTtsFinished] = useState(false); // TTS 완료 여부 상태 추가
+  const [ttsFinished, setTtsFinished] = useState(false);
   const mediaRecorderRef = useRef(null);
   const chunksRef = useRef([]);
   const intervalRef = useRef(null);
@@ -133,6 +26,8 @@ const Report = () => {
     socket.on('audio_text', (data) => {
       console.log('Received audio_text:', data.audio_text);
       setResult(data.audio_text);
+      setChat(prevChat => [...prevChat, { text: data.audio_text, isUser: true }]);
+      playTts(data.audio_text);
     });
 
     return () => {
@@ -165,6 +60,10 @@ const Report = () => {
       }
 
       setResult(finalTranscript || interimTranscript);
+      if (finalTranscript) {
+        setChat(prevChat => [...prevChat, { text: finalTranscript, isUser: true }]);
+        socket.emit('audio_text', { audio_text: finalTranscript });
+      }
       resetSilenceTimer();
     };
 
@@ -175,9 +74,9 @@ const Report = () => {
 
   useEffect(() => {
     playTts('신고 시작', () => {
-      setTtsFinished(true); // TTS가 완료되면 상태를 true로 설정
+      setTtsFinished(true);
     });
-  }, []); // 빈 배열을 의존성 배열로 설정하여 한 번만 실행되도록 함
+  }, []);
 
   const startRecording = () => {
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -230,9 +129,9 @@ const Report = () => {
     silenceTimerRef.current = setTimeout(async () => {
       stopRecording();
       const ttsText = await fetchTtsText();
-      setTtsText(ttsText); // TTS 텍스트 상태 설정
+      setChat(prevChat => [...prevChat, { text: ttsText, isUser: false }]);
       playTts(ttsText, startRecording);
-    }, 5000); // 5초 동안 음성이 인식되지 않으면 TTS 실행
+    }, 5000);
   };
 
   const resetSilenceTimer = () => {
@@ -277,7 +176,7 @@ const Report = () => {
   const encodeWAV = (audioBuffer) => {
     const numChannels = audioBuffer.numberOfChannels;
     const sampleRate = audioBuffer.sampleRate;
-    const format = 1; // PCM
+    const format = 1;
     const bitDepth = 16;
     const bytesPerSample = bitDepth / 8;
 
@@ -290,31 +189,18 @@ const Report = () => {
     const buffer = new ArrayBuffer(44 + interleaved.length * bytesPerSample);
     const view = new DataView(buffer);
 
-    /* RIFF identifier */
     writeString(view, 0, 'RIFF');
-    /* RIFF chunk length */
     view.setUint32(4, 36 + interleaved.length * bytesPerSample, true);
-    /* RIFF type */
     writeString(view, 8, 'WAVE');
-    /* format chunk identifier */
     writeString(view, 12, 'fmt ');
-    /* format chunk length */
     view.setUint32(16, 16, true);
-    /* sample format (raw) */
     view.setUint16(20, format, true);
-    /* channel count */
     view.setUint16(22, numChannels, true);
-    /* sample rate */
     view.setUint32(24, sampleRate, true);
-    /* byte rate (sample rate * block align) */
     view.setUint32(28, sampleRate * numChannels * bytesPerSample, true);
-    /* block align (channel count * bytes per sample) */
     view.setUint16(32, numChannels * bytesPerSample, true);
-    /* bits per sample */
     view.setUint16(34, bitDepth, true);
-    /* data chunk identifier */
     writeString(view, 36, 'data');
-    /* data chunk length */
     view.setUint32(40, interleaved.length * bytesPerSample, true);
 
     floatTo16BitPCM(view, 44, interleaved);
@@ -349,45 +235,40 @@ const Report = () => {
   };
 
   return (
-    <WhiteContainer>
-
+    <div className="report-container">
+      {/* <Overlay /> */}
+      {/* <CallModal /> */}
       <GoBackBtn />
-      <MacWindow>
-        <MacHeader>
-          <Dot color="#FF605C" />
-          <Dot color="#FFBD44" />
-          <Dot color="#00CA4E" />
-        </MacHeader>
-        <MacBody>
-          <RecordBox>
-            <BoldText>정확한 접수를 위해 녹음버튼을 눌러주세요</BoldText>
-            <div style={{ width: "500px", overflow: "hidden", margin: "0 auto" }}>
-              <ReactMic
-                record={recording}
-                className="sound-wave"
-                mimeType="audio/wav"
-                strokeColor="#444445"
-                backgroundColor="#f5f5f5c0" />
-            </div>
-          </RecordBox>
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            {!recording ? 
-              <BtnBorder onClick={startRecording} disabled={recording}>
-                <Circle />
-              </BtnBorder> :
-              <BtnBorder onClick={stopRecording} disabled={!recording}>
-                <Square />
-              </BtnBorder>
-            }
+      <div className="recording-container">
+        <div className="bold-text">정확한 접수를 위해 녹음버튼을 눌러주세요</div>
+        <div className="react-mic-container">
+          <ReactMic
+            record={recording}
+            className="sound-wave"
+            mimeType="audio/wav"
+            strokeColor="#444445"
+            backgroundColor="#ffffff" />
+        </div>
+        <div className="button-container">
+          {!recording ? 
+            <button className="btn-border" onClick={startRecording} disabled={recording}>
+              <div className="circle" />
+            </button> :
+            <button className="btn-border" onClick={stopRecording} disabled={!recording}>
+              <div className="square" />
+            </button>
+          }
+        </div>
+      </div>
+      <div className="chat-container">
+        {chat.map((msg, index) => (
+          <div key={index} className={`chat-bubble ${msg.isUser ? 'user' : 'system'}`}>
+            {msg.text}
           </div>
-          <STTText>{result}</STTText>
-          {ttsText && (
-            <STTText style={{ marginTop: '20px' }}>TTS: {ttsText}</STTText>
-          )}
-        </MacBody>
-      </MacWindow>
-    </WhiteContainer>
+        ))}
+      </div>
+    </div>
   );
-}
+};
 
 export default Report;

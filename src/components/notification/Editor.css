@@ -15,33 +15,47 @@
 	font-family: 'Lato';
 	line-height: 1.6;
 	word-break: break-word;
-    height: 450px;
+  height: 450px;
 }
 
 .editor-container_classic-editor .editor-container__editor {
-    min-width: 900px;
+  min-width: 900px;
 }
 
 /* 타이틀 박스 */
 textarea {
-    width: 100%;
-    height: 40px;
-    resize: none;
-    padding: 10px;
-    font-size: 16px;
-    font-weight: 900;
+  width: 100%;
+  height: 40px;
+  resize: none;
+  padding: 10px;
+  font-size: 16px;
+  font-weight: 900;
+  border: none;
+  border-radius: 20px;
+  background-color: #D5D9DB62;
+  margin-bottom: 10px;
 }
 
 /* 버튼 */
 .btns {
-    text-align: right;
-    margin-top: 10px;
+  text-align: right;
+  margin-top: 10px;
 }
 
 .btns button {
-    padding: 5px 10px;
+  border: none;
+  font-weight: 900;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background-color: #D5D9DB62;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  cursor: pointer;
+}
+
+.btns button:hover {
+  background-color: #d5d9db;
 }
 
 .btns button:first-child {
-    margin-right: 10px;
+  margin-right: 10px;
 }

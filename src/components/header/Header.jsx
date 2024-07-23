@@ -1,11 +1,14 @@
-import styled from 'styled-components'
+import { useEffect, useState } from 'react';
 import { Container, Image } from '../CommonStyles';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import './Header.css'
+import styled from 'styled-components'
 
 const CustomHeader = styled.header`
   height: 80px;
-  color: white;
   font-size: 25px;
+  font-weight: 900;
   min-width: 1200px;
   background-color: #D5D9DB62;
 `
@@ -16,27 +19,20 @@ const NavContainer = styled.div`
   justify-content: flex-end;
 `
 
-const Tab = styled.div`
-  padding: 10px 20px;
-  cursor: pointer;
-  font-size: 18px;
-  color: ${props => props.active ? 'white' : '#aaa'};
-  background-color: ${props => props.active ? '#A79E9A' : 'transparent'};
-  border-radius: 20px;
-  
-  &:hover {
-    background-color: #A79E9A;
-    color: white;
-  }
-`
-
 const Logo = styled.div`
   width: 80px;
   cursor: pointer;
 `;
 
 const Header = () => {
+  const [loc, setLoc] = useState('')
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    console.log(location.pathname)
+    setLoc(location.pathname);
+  }, [])
 
   return (
     <CustomHeader>
@@ -46,9 +42,9 @@ const Header = () => {
             <Image src={`${process.env.PUBLIC_URL}/images/logoEX.png`} />
           </Logo>
           <NavContainer>  
-            <Tab onClick={() => navigate('/main')}>대시보드</Tab>
-            <Tab onClick={() => navigate('/callreport')}>신고내역</Tab>
-            <Tab onClick={() => navigate('/notice')}>공지사항</Tab>
+            <div onClick={() => navigate('/main')} className={`menu ${loc == '/main' ? 'active' : ''}`}>대시보드</div>
+            <div onClick={() => navigate('/callreport')} className={`menu ${loc == '/callreport' ? 'active' : ''}`}>신고내역</div>
+            <div onClick={() => navigate('/notice')} className={`menu ${loc == '/notice' ? 'active' : ''}`}>공지사항</div>
           </NavContainer>
         </div>
       </Container>

@@ -8,6 +8,15 @@
   box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
+.notice-post-container h2 {
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  border-radius: 20px;
+  background-color: #D5D9DB62;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
 .notice-post-container .desc {
   gap: 10px;
   display: flex;

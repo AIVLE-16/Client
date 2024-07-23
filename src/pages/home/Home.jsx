@@ -41,40 +41,38 @@ const NavItem = styled.div`
 `;
 
 const PopupWrapper = styled.div`
-  position: fixed; /* 부모 요소를 고정 위치로 설정 */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
   z-index: 2;
+  display: flex;
+  justify-content: center;
+  background-color: rgb(0, 0, 0, 0.5);
 `;
 
 const PopupContent = styled.div`
-  position: absolute;
-  top: 100px;
-  left: 200px;
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
   cursor: grab;
+  padding: 20px;
+  margin-top: 70px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+
   &.dragging {
     cursor: grabbing;
   }
-  box-sizing: border-box;
 `;
 
 const ImageContainer = styled.div`
-  position: relative;
   width: 100%;
   height: auto;
 `;
 
 const CloseButton = styled.button`
-  position: absolute;
-  bottom: 10px; /* 버튼을 아래로 이동 */
-  right: 10px;
-  background: none;
   border: none;
+  background: none;
   font-size: 20px;
   cursor: pointer;
 `;
@@ -82,10 +80,8 @@ const CloseButton = styled.button`
 const CheckboxContainer = styled.div`
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-top: 10px;
-  position: absolute;
-  bottom: 40px; /* 하단에서 약간 위로 이동 */
-  left: 10px; /* 왼쪽 여백 */
 `;
 
 const CentralTextContainer = styled.div`
@@ -186,16 +182,17 @@ const Home = () => {
                     style={{ width: '100%', height: '100%' }}
                   />
                 </a>
-                <CloseButton onClick={closePopup}>X</CloseButton>
-                <CheckboxContainer>
+              </ImageContainer>
+              <CheckboxContainer>
+                <label>
                   <input
                     type="checkbox"
                     checked={!showPopupToday}
                     onChange={() => setShowPopupToday(!showPopupToday)}
-                  />
-                  <label>오늘 하루 이 창 띄우지 않기</label>
-                </CheckboxContainer>
-              </ImageContainer>
+                  /> 오늘 하루 이 창 띄우지 않기
+                </label>
+                <CloseButton onClick={closePopup}>X</CloseButton>
+              </CheckboxContainer>
             </PopupContent>
           </Draggable>
         </PopupWrapper>

@@ -2,6 +2,11 @@ import styled from 'styled-components'
 import { useEffect, useRef } from "react";
 
 const ContentBox = styled.div`
+  padding: 30px;
+  border-radius: 20px;
+  background-color: #D5D9DB62;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+  
   img {
     width: 100%;
   }

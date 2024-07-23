@@ -5,13 +5,6 @@
   font-style: normal;
 }
 
-@font-face {
-  font-family: 'KOTRA_GOTHIC';
-  src: url('../../fonts/KOTRA_GOTHIC.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
 .Details {
     padding: 20px;
     max-width: 800px;
@@ -78,6 +71,37 @@
     margin-right: 0;
   }
 
+  .detail-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  
+  .detail-item label {
+    font-weight: bold;
+    margin-right: 10px;
+    min-width: 100px; 
+  }
+  
+  .detail-item audio {
+    margin-right: 15px;
+    flex: 1;
+  }
+  .detail-item a button {
+    background-color: #222f68;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 14px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 20px;
+    transition-duration: 0.4s;
+  }
+
 .list-button-container {
     display: flex;
     align-items: center;
@@ -86,14 +110,13 @@
   }
   
 .list-button-container p {
-    margin-top: 8px;
+    margin-top: 10px;
     font-size: 22px;
     color: #222f68;
     font-family: 'KimjungchulGothic';
     font-weight: bold;
   }
   
-
 .toList-button {
     display: inline-block;
     margin-top: 10px;

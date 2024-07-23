@@ -23,7 +23,7 @@ const NoticePost = () => {
   return <>
     <Header />
     <div className='notice-post-container'>
-      <h2 style={{textAlign: 'center'}}>{notice.title}</h2>
+      <h2>{notice.title}</h2>
       <div className='desc' style={{marginTop: '30px'}}>
         <p>{notice.user_id}</p>
         <p>{notice.created_at && notice.created_at.slice(0, 10)}</p>

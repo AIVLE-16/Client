@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../../apis/user';
+import { warningWithoutBtn } from '../../utils/swal';
 
 const UserComponentContainer = styled.div`
   display: flex;
@@ -62,7 +63,9 @@ const LogoutButton = styled.button`
 `;
 
 const UserComponent = ({name}) => {
-    const navigate = useNavigate();
+  const onEdit = () => {
+    warningWithoutBtn('이 기능은 추후 제공 예정입니다.', '개인정보 변경이 필요할 경우 관리자에게 문의 바랍니다.');
+  }
 
   return (
     <UserComponentContainer>
@@ -74,7 +77,7 @@ const UserComponent = ({name}) => {
         <img src="images\userIcon.png" alt="User Icon" width="90" height="90" />
       </div>
       <ButtonGroupContainer>
-        <EditButton>정보수정</EditButton>
+        <EditButton onClick={onEdit}>정보수정</EditButton>
         <LogoutButton onClick={logout}>로그아웃</LogoutButton>
       </ButtonGroupContainer>
     </UserComponentContainer>

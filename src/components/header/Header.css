@@ -1,0 +1,17 @@
+.menu {
+  color: #898989;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 10px 20px;
+  border-radius: 20px;
+}
+
+.menu:hover {
+  color: white;
+  background-color: #b6b6b6;
+}
+
+.active {
+  color: white;
+  background-color: #b6b6b6;
+}

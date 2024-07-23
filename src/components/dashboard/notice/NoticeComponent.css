@@ -10,31 +10,21 @@
 }
 
 .notice-wrapper button {
-  width: 20px;
-  height: 20px;
+  border: none;
   font-size: 20px;
-  font-weight: 600;
-  text-align: center;
-  border-radius: 50%;
-  border: 2px solid black;
-  background-color: inherit;
-  cursor: pointer;
-}
-
-.notice-wrapper button > span {
-  top: -2px;
-  position: relative;
+  background-color: transparent;
 }
 
 .notice-wrapper button:hover {
+  cursor: pointer;
   transform: scale(1.1);
 }
 
 .notice-wrapper .table-wrapper {
-  margin-top: 15px;
-  border-radius: 20px;
-  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
   overflow: hidden;
+  margin-top: 15px;
+  border-radius: 15px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
 .notice-wrapper table {

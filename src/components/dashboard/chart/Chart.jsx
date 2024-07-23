@@ -64,8 +64,10 @@ const Chart = () => {
 
   const getData = () => {
     getStats().then((res) => {
-      setLabels(res.map(item => item.category));
-      setValues(res.map(item => item.count));
+      if (res) {
+        setLabels(res.map(item => item.category));
+        setValues(res.map(item => item.count));
+      }
     })
   }
 

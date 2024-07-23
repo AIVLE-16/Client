@@ -3,7 +3,7 @@ import { getCookie } from '../utils/cookie';
 import { errorWithoutBtn, successWithoutBtn } from '../utils/swal';
 
 const csrftoken = getCookie('csrftoken');
-const SERVER_URL = 'http://localhost:8000/account/'
+const SERVER_URL = process.env.REACT_APP_USER_SERVER_URL
 
 // 로그인
 export const login = (id, password) => {

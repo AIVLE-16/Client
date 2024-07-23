@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { cancelAlert, successWithoutBtn } from '../utils/swal';
+import { cancelAlert, errorWithoutBtn, successWithoutBtn } from '../utils/swal';
 
 const access = localStorage.getItem('access');
-const SERVER_URL = 'http://localhost:8000/post/';
+const SERVER_URL = process.env.REACT_APP_POST_SERVER_URL
 
 // 전체 공지사항 가져오기
 export const getNotice = () => {
@@ -35,7 +35,11 @@ export const writeNotification = (user_id, title, content) => {
     }
   })
   .then(() => successWithoutBtn('공지사항이 등록되었습니다.', '', () => window.location.href = '/notice'))
-  .catch((error) => console.log(error))
+  .catch((error) => {
+    const msg = error.response.data.message;
+    if (msg.includes('DATA_UPLOAD_MAX')) errorWithoutBtn('파일 최대 용량을 초과하였습니다.');
+    console.log('공지사항 글쓰기', error)
+})
 }
 
 // 수정
